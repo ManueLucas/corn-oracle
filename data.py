@@ -2,14 +2,15 @@ import yfinance as yf
 import pandas as pd
 import numpy as np
 import os
-from datetime import datetime
+#from datetime import datetime
 
 # Define the ticker symbol for corn futures (ZC=F for Corn Futures)
 ticker = "ZC=F"
 
 # Define the start and end dates for the data
 data_start = "2000-08-01"
-data_end = datetime.today().strftime('%Y-%m-%d')
+data_end = "2025-01-01"
+#data_end = datetime.today().strftime('%Y-%m-%d')
 
 # Download historical OHLC data using yfinance
 def download_corn_futures_data(ticker, start_date, end_date):
