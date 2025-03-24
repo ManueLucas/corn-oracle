@@ -19,7 +19,7 @@ def download_weather_data():
     params = {
 		"latitude": 52.52,
 		"longitude": 13.41,
-		"start_date": "2000-01-01",
+		"start_date": "2000-08-01",
 		"end_date": "2024-12-31",
 		"daily": ["weather_code", "shortwave_radiation_sum", "temperature_2m_mean", "temperature_2m_max", "temperature_2m_min", "sunshine_duration", "precipitation_sum", "precipitation_hours", "rain_sum", "daylight_duration", "snowfall_sum"],
 		"hourly": "temperature_2m",
@@ -69,7 +69,7 @@ def download_weather_data():
     daily_dataframe = pd.DataFrame(data = daily_data)
     print(daily_dataframe)
     
-    output_path = os.path.join(output_dir, "weather_data_2000-01-01_to_2025-01-01.csv")
+    output_path = os.path.join(output_dir, "weather_data_2000-08-01_to_2025-01-01.csv")
     daily_dataframe.to_csv(output_path, index=False)
     print(f"Weather data exported to {output_path}")
 
