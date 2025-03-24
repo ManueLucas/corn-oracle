@@ -1,6 +1,9 @@
 # Dataset Folder
 Data/
 
+# Weather Data Cache
+.cache.sqlite
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
