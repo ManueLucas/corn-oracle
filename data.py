@@ -8,7 +8,7 @@ from datetime import datetime
 ticker = "ZC=F"
 
 # Define the start and end dates for the data
-data_start = "2000-07-17"
+data_start = "2000-08-01"
 data_end = datetime.today().strftime('%Y-%m-%d')
 
 # Download historical OHLC data using yfinance
