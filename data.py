@@ -2,6 +2,7 @@ import yfinance as yf
 import pandas as pd
 import numpy as np
 import os
+from sklearn.model_selection import train_test_split
 #from datetime import datetime
 
 # Define the ticker symbol for corn futures (ZC=F for Corn Futures)
@@ -30,7 +31,7 @@ def download_corn_futures_data(ticker, start_date, end_date):
         # Make the index the date
         data.index = pd.to_datetime(data.index)
         full_index = pd.date_range(start=data.index.min(), end=data.index.max(), freq="D")
-        # data = data.reindex(full_index)
+        data = data.reindex(full_index)
         
         # Use rolling Statistics imputation to fill out unrecorded data
         data["Open"] = data["Open"].fillna(method="ffill").fillna(method="bfill").fillna(data["Open"].rolling(5, min_periods=1).mean())
@@ -44,10 +45,21 @@ def download_corn_futures_data(ticker, start_date, end_date):
 
         os.makedirs("Data", exist_ok=True)
         
+        train_data, test_data = train_test_split(data, test_size=0.2, shuffle=False)
+        
+        print(f"len(data): {len(data)}")
+        print(f"len(train_data): {len(train_data)}")
+        print(f"len(test_data): {len(test_data)}")
+        
         # Save to a CSV file
-        output_file = os.path.join("Data", f"corn_futures_{start_date}_to_{end_date}.csv")
-        data.to_csv(output_file, index_label='Date')
-        print(f"Data downloaded and saved to {output_file}")
+        train_output_file = os.path.join("Data", f"train_corn_futures_{start_date}_to_{end_date}.csv")
+        test_output_file = os.path.join("Data", f"test_corn_futures_{start_date}_to_{end_date}.csv")
+        
+        train_data.to_csv(train_output_file, index_label='Date')
+        test_data.to_csv(test_output_file, index_label='Date')
+
+        print(f"Data downloaded and saved to {train_output_file}")
+        print(f"Data downloaded and saved to {test_output_file}")
 
         return data
     
