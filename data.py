@@ -23,10 +23,14 @@ def download_corn_futures_data(ticker, start_date, end_date):
             print(f"No data found for {ticker}.")
             return None
         
+        # Flatten multi-level column index if present
+        if isinstance(data.columns, pd.MultiIndex):
+            data.columns = data.columns.get_level_values(0)
+        
         # Make the index the date
         data.index = pd.to_datetime(data.index)
         full_index = pd.date_range(start=data.index.min(), end=data.index.max(), freq="D")
-        data = data.reindex(full_index)
+        # data = data.reindex(full_index)
         
         # Use rolling Statistics imputation to fill out unrecorded data
         data["Open"] = data["Open"].fillna(method="ffill").fillna(method="bfill").fillna(data["Open"].rolling(5, min_periods=1).mean())
@@ -42,7 +46,7 @@ def download_corn_futures_data(ticker, start_date, end_date):
         
         # Save to a CSV file
         output_file = os.path.join("Data", f"corn_futures_{start_date}_to_{end_date}.csv")
-        data.to_csv(output_file)
+        data.to_csv(output_file, index_label='Date')
         print(f"Data downloaded and saved to {output_file}")
 
         return data
