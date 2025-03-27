@@ -35,9 +35,10 @@ def eval_forecasting(model, data, train_slice, valid_slice, test_slice, scaler, 
     valid_repr = all_repr[:, valid_slice]
     test_repr = all_repr[:, test_slice]
     
-    train_data = data[:, train_slice, n_covariate_cols:]
-    valid_data = data[:, valid_slice, n_covariate_cols:]
-    test_data = data[:, test_slice, n_covariate_cols:]
+    close_index = n_covariate_cols + 0
+    train_data = data[:, train_slice, close_index : close_index + 1]
+    valid_data = data[:, valid_slice, close_index : close_index + 1]
+    test_data  = data[:, test_slice,  close_index : close_index + 1]
     
     ours_result = {}
     lr_train_time = {}

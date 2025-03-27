@@ -135,9 +135,16 @@ def _get_time_features(dt):
 
 
 def load_forecast_csv(name, univar=False):
+    print("\n")
+
+    all_columns = pd.read_csv(f'Data/{name}.csv', nrows=1).columns.tolist()
+    print(f"All Columns: {all_columns}")
+
     data = pd.read_csv(f'Data/{name}.csv', index_col='Date', parse_dates=True)
-    print(data.index)
-    print(type(data.index))
+    print("Columns:", data.columns.tolist())
+    # print("Closing Data: ", data['Close'].tolist())
+    print("Head:\n", data.head())
+
     dt_embed = _get_time_features(data.index)
     n_covariate_cols = dt_embed.shape[-1]
     
@@ -164,6 +171,7 @@ def load_forecast_csv(name, univar=False):
         test_slice = slice(int(0.8 * len(data)), None)
     
     scaler = StandardScaler().fit(data[train_slice])
+    close_scaler = StandardScaler().fit(data[train_slice, [0]])
     data = scaler.transform(data)
     if name in ('electricity'):
         data = np.expand_dims(data.T, -1)  # Each variable is an instance rather than a feature
@@ -180,7 +188,9 @@ def load_forecast_csv(name, univar=False):
     else:
         pred_lens = [24, 48, 96, 288, 672]
         
-    return data, train_slice, valid_slice, test_slice, scaler, pred_lens, n_covariate_cols
+    # return data, train_slice, valid_slice, test_slice, scaler, pred_lens, n_covariate_cols
+    return data, train_slice, valid_slice, test_slice, close_scaler, pred_lens, n_covariate_cols
+
 
 
 def load_anomaly(name):
