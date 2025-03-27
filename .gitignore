@@ -1,6 +1,6 @@
 # Dataset Folder
 Data/
-models/
+saved_models/
 
 # Weather Data Cache
 .cache.sqlite
