@@ -4,6 +4,7 @@ import torch
 from data import prepare_sequences_targets
 import pandas as pd
 import numpy as np
+from data import download_corn_futures_eval_data
 
 def load_model(model_name, checkpoint_name, device):
     """
@@ -122,6 +123,7 @@ def evaluate_model(model, features, device):
     """
     # TODO: Add logic to evaluate the model (add separate logic for each model and the type of features they use, whether they require preprocessing or some unsupervised step before)
     if features == "raw":
+        download_corn_futures_eval_data()
         eval_raw(model, device)
         
 

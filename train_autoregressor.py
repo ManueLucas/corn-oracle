@@ -8,6 +8,7 @@ from sklearn.model_selection import TimeSeriesSplit
 from data import prepare_sequences_targets
 import rnn_autoregressor
 import os
+from data import download_corn_futures_full_data
 import argparse
 
 # Training loop for the model.
@@ -230,6 +231,9 @@ if __name__ == "__main__":
     print(f"Number of Epochs: {args.num_epochs}")
     print(f"Learning Rate: {args.learning_rate}")
     print(f"Device: {args.device}")
+    
+    download_corn_futures_full_data()
+    
     rnn_prepare_train(
         sequence_length=args.sequence_length,
         input_size=args.input_size,
