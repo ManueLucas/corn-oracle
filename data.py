@@ -62,14 +62,14 @@ def download_corn_futures_data(ticker, start_date, end_date):
         print(f"An error occurred: {e}")
         return None
     
-def combine_dataframes(ticker, start_date, corn_end_date, weather_end_date):
+def download_combined(ticker, start_date, corn_end_date, weather_end_date):
     corn_data = download_corn_futures_data(ticker, start_date, corn_end_date)
     weather_data = download_weather_data(start_date, weather_end_date)
 
     # Normalize both indexes to be timezone-naive
     corn_data.index = pd.to_datetime(corn_data.index).tz_localize(None)
     weather_data['date'] = pd.to_datetime(weather_data['date']).dt.tz_localize(None)
-    
+
     weather_data.rename(columns={'date': 'Date'}, inplace=True)
     weather_data.set_index('Date', inplace=True)
 
@@ -81,6 +81,19 @@ def combine_dataframes(ticker, start_date, corn_end_date, weather_end_date):
     print(f"Data downloaded and saved to {output_file}")
 
     return combined_data
+
+def split_combined(ticker, start_date, corn_end_date, weather_end_date):
+    combined_data = download_combined(ticker, start_date, corn_end_date, weather_end_date)
+
+    combined_train_data, combined_test_data = train_test_split(combined_data, test_size=0.2, shuffle=False)
+
+    train_output_file = os.path.join("Data", f"train_combined_{start_date}_to_{corn_end_date}.csv")
+    test_output_file = os.path.join("Data", f"test_combined_{start_date}_to_{corn_end_date}.csv")
+    
+    combined_train_data.to_csv(train_output_file, index_label='Date')
+    combined_test_data.to_csv(test_output_file, index_label='Date')
+
+    return combined_train_data, combined_test_data
     
     
 def download_corn_futures_full_data(start_date = '2024-08-01', end_date = '2025-01-01'):
@@ -196,7 +209,7 @@ def prepare_sequences_targets(data, sequence_length):
             return sequences, targets
 
 
-combine_dataframes(ticker, start_date, corn_end_date, weather_end_date)
+split_combined(ticker, start_date, corn_end_date, weather_end_date)
 # # Run the function
 # data = download_corn_futures_data(ticker, data_start, data_end)
 
