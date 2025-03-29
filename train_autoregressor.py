@@ -185,9 +185,10 @@ def rnn_prepare_train_test():
             hidden_size=64, num_layers=1, num_epochs=10, learning_rate=0.001, device='cpu'
         )
         
-def rnn_prepare_train(sequence_length=30, input_size=7, output_size=7, hidden_size=64, num_layers=1, num_epochs=10, learning_rate=0.001, device='cpu'): 
+def rnn_prepare_train(sequence_length=30, hidden_size=64, num_layers=1, num_epochs=10, learning_rate=0.001, device='cpu'): 
     # Example parameters.
-    data = pd.read_csv('./Data/corn_futures_2000-07-17_to_2025-03-24.csv')
+    default_route = "./Data/"
+    data = pd.read_csv(default_route + args.dataset)
 
     # Convert all columns to numeric, coercing errors to NaN
     data = data.apply(pd.to_numeric, errors='coerce')
@@ -201,6 +202,9 @@ def rnn_prepare_train(sequence_length=30, input_size=7, output_size=7, hidden_si
     
     train_sequences, train_targets = prepare_sequences_targets(alldata, sequence_length)
 
+    input_size =  alldata.shape[1]
+    output_size = input_size
+
     model = train_autoregressive_rnn(sequence_length, input_size, output_size, (train_sequences, train_targets), hidden_size=hidden_size, num_layers=num_layers, num_epochs=num_epochs, learning_rate=learning_rate, device=device)
     
     save_path = "checkpoints"
@@ -213,19 +217,16 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="Train an autoregressive RNN model.")
     parser.add_argument("--sequence_length", type=int, default=30, help="Length of input sequences.")
-    parser.add_argument("--input_size", type=int, default=7, help="Number of features per time step.")
-    parser.add_argument("--output_size", type=int, default=7, help="Dimension of the output.")
     parser.add_argument("--hidden_size", type=int, default=64, help="Number of features in the hidden state.")
     parser.add_argument("--num_layers", type=int, default=1, help="Number of stacked LSTM layers.")
     parser.add_argument("--num_epochs", type=int, default=10, help="Number of training epochs.")
     parser.add_argument("--learning_rate", type=float, default=0.001, help="Learning rate for the optimizer.")
     parser.add_argument("--device", type=str, default="cpu", help="'cpu' or 'cuda'.")
+    parser.add_argument("--dataset", type=str, help="Path to the dataset CSV file.")
 
     args = parser.parse_args()
     print("Hyperparameters:")
     print(f"Sequence Length: {args.sequence_length}")
-    print(f"Input Size: {args.input_size}")
-    print(f"Output Size: {args.output_size}")
     print(f"Hidden Size: {args.hidden_size}")
     print(f"Number of Layers: {args.num_layers}")
     print(f"Number of Epochs: {args.num_epochs}")
@@ -234,8 +235,6 @@ if __name__ == "__main__":
     
     rnn_prepare_train(
         sequence_length=args.sequence_length,
-        input_size=args.input_size,
-        output_size=args.output_size,
         hidden_size=args.hidden_size,
         num_layers=args.num_layers,
         num_epochs=args.num_epochs,
