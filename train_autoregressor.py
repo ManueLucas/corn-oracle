@@ -232,8 +232,6 @@ if __name__ == "__main__":
     print(f"Learning Rate: {args.learning_rate}")
     print(f"Device: {args.device}")
     
-    download_corn_futures_full_data()
-    
     rnn_prepare_train(
         sequence_length=args.sequence_length,
         input_size=args.input_size,
