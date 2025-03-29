@@ -7,7 +7,10 @@ from retry_requests import retry
 output_dir = "Data"
 os.makedirs(output_dir, exist_ok=True)
 
-def download_weather_data():
+start_date = "2000-08-01"
+end_date = "2024-12-31"
+
+def download_weather_data(start_date, end_date):
     # Setup the Open-Meteo API client with cache and retry on error
     cache_session = requests_cache.CachedSession('.cache', expire_after = -1)
     retry_session = retry(cache_session, retries = 5, backoff_factor = 0.2)
@@ -17,13 +20,14 @@ def download_weather_data():
     # The order of variables in hourly or daily is important to assign them correctly below
     url = "https://archive-api.open-meteo.com/v1/archive"
     params = {
-		"latitude": 52.52,
-		"longitude": 13.41,
-		"start_date": "2000-08-01",
-		"end_date": "2024-12-31",
+        # random cornfield in Iowa, USA
+		"latitude": 41.85092474040749,
+		"longitude": -93.71062383728942,
+		"start_date": start_date,
+		"end_date": end_date,
 		"daily": ["weather_code", "shortwave_radiation_sum", "temperature_2m_mean", "temperature_2m_max", "temperature_2m_min", "sunshine_duration", "precipitation_sum", "precipitation_hours", "rain_sum", "daylight_duration", "snowfall_sum"],
 		"hourly": "temperature_2m",
-		"timezone": "America/New_York"
+		"timezone": "GMT"
 	}
     responses = openmeteo.weather_api(url, params=params)
 
@@ -73,4 +77,6 @@ def download_weather_data():
     daily_dataframe.to_csv(output_path, index=False)
     print(f"Weather data exported to {output_path}")
 
-download_weather_data()
+    return daily_dataframe
+
+download_weather_data(start_date, end_date)

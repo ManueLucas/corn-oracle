@@ -2,6 +2,7 @@ import yfinance as yf
 import pandas as pd
 import numpy as np
 import os
+from weather_data import download_weather_data
 from sklearn.model_selection import train_test_split
 #from datetime import datetime
 
@@ -9,8 +10,9 @@ from sklearn.model_selection import train_test_split
 ticker = "ZC=F"
 
 # Define the start and end dates for the data
-data_start = "2000-08-01"
-data_end = "2025-01-01"
+start_date = "2000-08-01"
+corn_end_date = "2025-01-01"
+weather_end_date = "2024-12-31"
 #data_end = datetime.today().strftime('%Y-%m-%d')
 
 # Download historical OHLC data using yfinance
@@ -45,26 +47,41 @@ def download_corn_futures_data(ticker, start_date, end_date):
 
         os.makedirs("Data", exist_ok=True)
         
-        train_data, test_data = train_test_split(data, test_size=0.2, shuffle=False)
         
         print(f"len(data): {len(data)}")
-        print(f"len(train_data): {len(train_data)}")
-        print(f"len(test_data): {len(test_data)}")
         
         # Save to a CSV file
-        train_output_file = os.path.join("Data", f"train_corn_futures_{start_date}_to_{end_date}.csv")
-        test_output_file = os.path.join("Data", f"test_corn_futures_{start_date}_to_{end_date}.csv")
+        output_file = os.path.join("Data", f"corn_futures_{start_date}_to_{end_date}.csv")
         
-        train_data.to_csv(train_output_file, index_label='Date')
-        test_data.to_csv(test_output_file, index_label='Date')
+        data.to_csv(output_file, index_label='Date')
 
-        print(f"Data downloaded and saved to {train_output_file}")
-        print(f"Data downloaded and saved to {test_output_file}")
+        print(f"Data downloaded and saved to {output_file}")
+
+        return data
     except Exception as e:
         print(f"An error occurred: {e}")
         return None
+    
+def combine_dataframes(ticker, start_date, corn_end_date, weather_end_date):
+    corn_data = download_corn_futures_data(ticker, start_date, corn_end_date)
+    weather_data = download_weather_data(start_date, weather_end_date)
 
-    return data
+    # Normalize both indexes to be timezone-naive
+    corn_data.index = pd.to_datetime(corn_data.index).tz_localize(None)
+    weather_data['date'] = pd.to_datetime(weather_data['date']).dt.tz_localize(None)
+    
+    weather_data.rename(columns={'date': 'Date'}, inplace=True)
+    weather_data.set_index('Date', inplace=True)
+
+    combined_data = pd.concat([corn_data, weather_data], axis=1)
+
+    output_file = os.path.join("Data", f"combined_data_{start_date}_to_{corn_end_date}.csv")
+    combined_data.to_csv(output_file, index_label='Date')
+
+    print(f"Data downloaded and saved to {output_file}")
+
+    return combined_data
+    
     
 def download_corn_futures_full_data(start_date = '2024-08-01', end_date = '2025-01-01'):
     try:
@@ -179,7 +196,7 @@ def prepare_sequences_targets(data, sequence_length):
             return sequences, targets
 
 
-
+combine_dataframes(ticker, start_date, corn_end_date, weather_end_date)
 # # Run the function
 # data = download_corn_futures_data(ticker, data_start, data_end)
 
