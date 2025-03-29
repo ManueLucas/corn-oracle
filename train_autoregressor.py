@@ -5,6 +5,7 @@ import numpy as np
 from torch.utils.data import DataLoader, TensorDataset
 import pandas as pd
 from sklearn.model_selection import TimeSeriesSplit
+from sklearn.preprocessing import StandardScaler
 from data import prepare_sequences_targets
 import rnn_autoregressor
 import os
@@ -155,6 +156,9 @@ def rnn_prepare_train_test():
     print(f'alldata shape {alldata.shape}')
     num_features = alldata.shape[1]
 
+    # normalize data using a standard scaler
+    alldata = StandardScaler().fit_transform(alldata)
+    
     input_size =  alldata.shape[1]
     output_size = input_size
 
