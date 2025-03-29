@@ -120,20 +120,19 @@ def train_and_test_autoregressive_rnn(sequence_length, input_size, output_size, 
     criterion = nn.MSELoss()
     test_losses = []
     with torch.no_grad():
-        for epoch in range(num_epochs):
-            test_loss = 0.0
-            for inputs, targets in test_loader:
-                inputs = inputs.to(device)
-                targets = targets.to(device)
+        test_loss = 0.0
+        for inputs, targets in test_loader:
+            inputs = inputs.to(device)
+            targets = targets.to(device)
 
-                outputs, _ = model(inputs)
-                loss = criterion(outputs, targets)
-                test_loss += loss.item() * inputs.size(0)
+            outputs, _ = model(inputs)
+            loss = criterion(outputs, targets)
+            test_loss += loss.item() * inputs.size(0)
 
-            test_loss /= len(test_loader.dataset)
-            test_losses.append(test_loss)
+        test_loss /= len(test_loader.dataset)
+        test_losses.append(test_loss)
 
-            print(f"Epoch {epoch+1}/{num_epochs}, Train Loss: {train_losses[epoch]:.4f}, Test Loss: {test_loss:.4f}")
+        print(f"Test Loss: {test_loss}")
 
     return train_losses, test_losses
 
@@ -141,9 +140,10 @@ def train_and_test_autoregressive_rnn(sequence_length, input_size, output_size, 
 def rnn_prepare_train_test():
     # Example parameters.
     sequence_length = 30  # days
-    input_size = 7        # univariate series
-    output_size = 7
-    data = pd.read_csv('./Data/corn_futures_2000-07-17_to_2025-03-24.csv')
+    # input_size = 7       
+    # output_size = 7
+    default_route = "./Data/"
+    data = pd.read_csv(default_route + args.dataset)
 
     # Convert all columns to numeric, coercing errors to NaN
     data = data.apply(pd.to_numeric, errors='coerce')
@@ -154,6 +154,9 @@ def rnn_prepare_train_test():
     alldata = data.values[:, 1:]
     print(f'alldata shape {alldata.shape}')
     num_features = alldata.shape[1]
+
+    input_size =  alldata.shape[1]
+    output_size = input_size
 
     # Train and test the model.
 
@@ -233,11 +236,13 @@ if __name__ == "__main__":
     print(f"Learning Rate: {args.learning_rate}")
     print(f"Device: {args.device}")
     
-    rnn_prepare_train(
-        sequence_length=args.sequence_length,
-        hidden_size=args.hidden_size,
-        num_layers=args.num_layers,
-        num_epochs=args.num_epochs,
-        learning_rate=args.learning_rate,
-        device=args.device
-    )
+    # rnn_prepare_train(
+    #     sequence_length=args.sequence_length,
+    #     hidden_size=args.hidden_size,
+    #     num_layers=args.num_layers,
+    #     num_epochs=args.num_epochs,
+    #     learning_rate=args.learning_rate,
+    #     device=args.device
+    # )
+
+    rnn_prepare_train_test()
