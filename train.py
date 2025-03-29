@@ -10,6 +10,11 @@ import tasks
 import datautils
 from utils import init_dl_program, name_with_datetime, pkl_save, data_dropout
 
+def init_dl_program(gpu, seed=None, max_threads=None):
+    device = torch.device(f"cuda:{gpu}" if torch.cuda.is_available() else "cpu")
+    print(f"Using device: {device}")
+    return device
+
 def save_checkpoint_callback(
     save_every=1,
     unit='epoch'
