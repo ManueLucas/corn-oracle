@@ -20,14 +20,6 @@ optional arguments:
   
                         Length of input sequences.
                         
-  --input_size INPUT_SIZE
-  
-                        Number of features per time step.
-                        
-  --output_size OUTPUT_SIZE
-  
-                        Dimension of the output.
-                        
   --hidden_size HIDDEN_SIZE
   
                         Number of features in the hidden state.
@@ -43,9 +35,10 @@ optional arguments:
   --learning_rate LEARNING_RATE
   
                         Learning rate for the optimizer.
+
   --device DEVICE       
   
                         'cpu' or 'cuda'.
 Example: 
 
-python ./train_autoregressor.py --hidden_size 256 --num_layers 2 --num_epochs 5
+python ./train_autoregressor.py --hidden_size 256 --num_layers 2 --num_epochs 5 --dataset combined_data_2000-08-01_to_2025-01-01.csv --device cpu
