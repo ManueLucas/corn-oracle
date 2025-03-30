@@ -12,6 +12,8 @@ import os
 from data import download_corn_futures_full_data
 import argparse
 
+scaler = StandardScaler()
+
 # Training loop for the model.
 def train_model(model, train_loader, num_epochs=10, learning_rate=0.001, device='cpu'):
     model.to(device)
@@ -127,7 +129,24 @@ def train_and_test_autoregressive_rnn(sequence_length, input_size, output_size, 
             targets = targets.to(device)
 
             outputs, _ = model(inputs)
+            
+            # do an inverse transform to allow comparison with raw data
+            outputs = scaler.inverse_transform(outputs.cpu().numpy().reshape(-1, outputs.shape[-1])).reshape(outputs.shape)
+            targets = scaler.inverse_transform(targets.cpu().numpy().reshape(-1, targets.shape[-1])).reshape(targets.shape)
+            
+            # if you want to only test close price, use these instead
+            #outputs_close = outputs[..., 0]
+            #targets_close = targets[..., 0]
+            #outputs_close = torch.tensor(outputs_close, dtype=torch.float32, device=device)
+            #targets_close = torch.tensor(targets_close, dtype=torch.float32, device=device)
+            #loss = criterion(outputs_close, targets_close)
+            
+            # Otherwise, use these
+            outputs = torch.tensor(outputs, dtype=torch.float32, device=device)
+            targets = torch.tensor(targets, dtype=torch.float32, device=device)
             loss = criterion(outputs, targets)
+
+
             test_loss += loss.item() * inputs.size(0)
 
         test_loss /= len(test_loader.dataset)
@@ -157,7 +176,8 @@ def rnn_prepare_train_test():
     num_features = alldata.shape[1]
 
     # normalize data using a standard scaler
-    alldata = StandardScaler().fit_transform(alldata)
+    global scaler
+    alldata = scaler.fit_transform(alldata)
     
     input_size =  alldata.shape[1]
     output_size = input_size
@@ -184,6 +204,12 @@ def rnn_prepare_train_test():
         # Example usage:
         train_sequences, train_targets = prepare_sequences_targets(train_data, sequence_length)
         test_sequences, test_targets = prepare_sequences_targets(test_data, sequence_length)
+        
+        # transforming the given sequences
+        train_sequences = scaler.transform(train_sequences.reshape(-1, train_sequences.shape[-1])).reshape(train_sequences.shape)
+        train_targets = scaler.transform(train_targets)
+        test_sequences = scaler.transform(test_sequences.reshape(-1, test_sequences.shape[-1])).reshape(test_sequences.shape)
+        test_targets = scaler.transform(test_targets)
         
         train_losses, test_losses = train_and_test_autoregressive_rnn(
             sequence_length, input_size, output_size,
