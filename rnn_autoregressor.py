@@ -10,7 +10,7 @@ from sklearn.model_selection import TimeSeriesSplit
 
 # Define the autoregressive RNN model using LSTM.
 class AutoregressiveRNN(nn.Module):
-    def __init__(self, input_size=1, hidden_size=64, num_layers=1, output_size=1):
+    def __init__(self, input_size=1, hidden_size=64, num_layers=1, output_size=1, batch_norm=True):
         """
         Args:
             input_size: number of features per time step (e.g., 1 for a univariate series)
@@ -26,10 +26,18 @@ class AutoregressiveRNN(nn.Module):
         }
         
         super(AutoregressiveRNN, self).__init__()
+        self.batch_norm = batch_norm
+        if batch_norm:
+            self.batch_normalization_layer = nn.LayerNorm(input_size)
+
         self.lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True)
         self.fc = nn.Linear(hidden_size, output_size)
     
     def forward(self, x, hidden=None):
+        # nomalizin n data
+        if self.batch_norm:
+            x = self.batch_normalization_layer(x)
+
         # x: shape (batch_size, sequence_length, input_size)
         lstm_out, hidden = self.lstm(x, hidden)
         # Use the last time-step's output for prediction.
