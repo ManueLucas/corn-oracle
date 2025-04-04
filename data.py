@@ -4,15 +4,22 @@ import numpy as np
 import os
 from weather_data import download_weather_data
 from sklearn.model_selection import train_test_split
+import argparse
 #from datetime import datetime
 
 # Define the ticker symbol for corn futures (ZC=F for Corn Futures)
 ticker = "ZC=F"
 
 # Define the start and end dates for the data
-start_date = "2000-08-01"
-corn_end_date = "2025-01-01"
-weather_end_date = "2024-12-31"
+start_date_train = "2000-08-01"
+
+corn_end_date_train = "2025-01-01"
+weather_end_date_train = "2024-12-31"
+
+start_date_test = "2025-01-01"
+
+corn_end_date_test = "2025-03-31"
+weather_end_date_test = "2024-03-30"
 #data_end = datetime.today().strftime('%Y-%m-%d')
 
 # Download historical OHLC data using yfinance
@@ -139,7 +146,7 @@ def download_corn_futures_full_data(start_date = '2024-08-01', end_date = '2025-
 
 def download_corn_futures_eval_data():
     start_date = '2025-01-01'
-    end_date = '2025-03-21'
+    end_date = '2025-03-31'
     try:
         # Fetch the data
         data = yf.download('ZC=F', start=start_date, end=end_date, progress=True)
@@ -203,26 +210,28 @@ def prepare_sequences_targets(data, sequence_length):
                 sequences.append(seq)
                 targets.append(target)
 
-            sequences = np.array(sequences)  # shape: (num_samples, sequence_length, input_size)
-            targets = np.array(targets)       # shape: (num_samples, output_size)
+            sequences = np.array(sequences).astype(np.float64)  # shape: (num_samples, sequence_length, input_size)
+            targets = np.array(targets).astype(np.float64)      # shape: (num_samples, output_size)
 
             return sequences, targets
 
+def main():
+    parser = argparse.ArgumentParser(description="Download corn futures and weather data.")
+    parser.add_argument("--mode", choices=["train", "test"], required=True, help="Specify whether to download train or test data.")
+    parser.add_argument("--data_type", choices=["corn", "combined"], required=True, help="Specify whether to download only corn data or combined data with weather.")
 
-split_combined(ticker, start_date, corn_end_date, weather_end_date)
-# # Run the function
-# data = download_corn_futures_data(ticker, data_start, data_end)
+    args = parser.parse_args()
 
-# # If needed, display the first few rows
-# if data is not None:
-#     print(data.head())
+    if args.mode == "train":
+        if args.data_type == "corn":
+            download_corn_futures_data(ticker, start_date_train, corn_end_date_train)
+        elif args.data_type == "combined":
+            download_combined(ticker, start_date_train, corn_end_date_train, weather_end_date_train)
+    elif args.mode == "test":
+        if args.data_type == "corn":
+            download_corn_futures_eval_data()
+        elif args.data_type == "combined":
+            split_combined(ticker, start_date_test, corn_end_date_test, weather_end_date_test)
 
-#data eval test
-# data = download_corn_futures_eval_data()
-
-# # If needed, display the first few rows
-# if data is not None:
-#     print(data.head())
-
-
-
+if __name__ == "__main__":
+    main()
