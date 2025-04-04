@@ -47,7 +47,7 @@ def download_corn_futures_data(ticker, start_date, end_date):
         data["High"] = data["High"].fillna(method="ffill").fillna(method="bfill").fillna(data["High"].rolling(5, min_periods=1).mean())
         data["Low"] = data["Low"].fillna(method="ffill").fillna(method="bfill").fillna(data["Low"].rolling(5, min_periods=1).mean())
         data["Close"] = data["Close"].fillna(method="ffill").fillna(method="bfill").fillna(data["Close"].rolling(5, min_periods=1).mean())
-        data["Volume"] = data["Volume"].fillna(0)
+        data["Volume"] = data["Volume"].fillna(method="ffill").fillna(method="bfill").fillna(data["Volume"].rolling(5, min_periods=1).mean())
         
         data["MA_7"] = data["Close"].rolling(window=7, min_periods=1).mean()   # 7-day rolling moving average
         data["MA_30"] = data["Close"].rolling(window=30, min_periods=1).mean() # 30-day rolling moving average
