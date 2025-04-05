@@ -157,7 +157,7 @@ def train_and_test_autoregressive_rnn(sequence_length, input_size, output_size, 
     return train_losses, test_losses
 
 
-def rnn_prepare_train_test():
+def rnn_prepare_train_test(sequence_length, hidden_size, num_layers, num_epochs, learning_rate, device):
     # Example parameters.
     sequence_length = 30  # days
     # input_size = 7       
@@ -215,7 +215,7 @@ def rnn_prepare_train_test():
             sequence_length, input_size, output_size,
             (train_sequences, train_targets),
             (test_sequences, test_targets),
-            hidden_size=64, num_layers=1, num_epochs=10, learning_rate=0.001, device='cpu'
+            hidden_size=hidden_size, num_layers=num_layers, num_epochs=num_epochs, learning_rate=learning_rate, device=device
         )
         
 def rnn_prepare_train(sequence_length=30, hidden_size=64, num_layers=1, num_epochs=10, learning_rate=0.001, device='cpu'): 
@@ -240,7 +240,7 @@ def rnn_prepare_train(sequence_length=30, hidden_size=64, num_layers=1, num_epoc
 
     model = train_autoregressive_rnn(sequence_length, input_size, output_size, (train_sequences, train_targets), hidden_size=hidden_size, num_layers=num_layers, num_epochs=num_epochs, learning_rate=learning_rate, device=device)
     
-    save_path = "checkpoints"
+    save_path = "rnn_models"
     os.makedirs(save_path, exist_ok=True)
     
     model.save_model(save_path)
@@ -249,6 +249,7 @@ def rnn_prepare_train(sequence_length=30, hidden_size=64, num_layers=1, num_epoc
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="Train an autoregressive RNN model.")
+    parser.add_argument("--mode", type=str, default="train", choices=["train", "validate"], help="Mode to run the script: 'train' or 'validate'.")
     parser.add_argument("--sequence_length", type=int, default=30, help="Length of input sequences.")
     parser.add_argument("--hidden_size", type=int, default=64, help="Number of features in the hidden state.")
     parser.add_argument("--num_layers", type=int, default=1, help="Number of stacked LSTM layers.")
@@ -266,13 +267,21 @@ if __name__ == "__main__":
     print(f"Learning Rate: {args.learning_rate}")
     print(f"Device: {args.device}")
     
-    # rnn_prepare_train(
-    #     sequence_length=args.sequence_length,
-    #     hidden_size=args.hidden_size,
-    #     num_layers=args.num_layers,
-    #     num_epochs=args.num_epochs,
-    #     learning_rate=args.learning_rate,
-    #     device=args.device
-    # )
-
-    rnn_prepare_train_test()
+    if args.mode == "train":
+        rnn_prepare_train(
+            sequence_length=args.sequence_length,
+            hidden_size=args.hidden_size,
+            num_layers=args.num_layers,
+            num_epochs=args.num_epochs,
+            learning_rate=args.learning_rate,
+            device=args.device
+        )
+    elif args.mode == "validate":
+        rnn_prepare_train_test(
+            sequence_length=args.sequence_length, 
+            hidden_size=args.hidden_size, 
+            num_layers=args.num_layers, 
+            num_epochs=args.num_epochs, 
+            learning_rate=args.learning_rate, 
+            device=args.device
+        )
