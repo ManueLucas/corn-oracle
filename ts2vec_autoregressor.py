@@ -62,7 +62,7 @@ class TS2VecRegressor(nn.Module):
         os.makedirs(path, exist_ok=True)
         
         # Find the next available filename
-        base_filename = 'ts2vecregressor'
+        base_filename = 'ts2veclinear'
         extension = '.pth'
         counter = 1
         while os.path.exists(os.path.join(path, f"{base_filename}_{counter}{extension}")):
