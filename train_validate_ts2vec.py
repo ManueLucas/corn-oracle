@@ -294,7 +294,7 @@ def ts2vec_prepare_train(
         device=device,
     )
 
-    save_path = "checkpoints"
+    save_path = "ts2vec_models"
     os.makedirs(save_path, exist_ok=True)
 
     model.save_model(save_path)

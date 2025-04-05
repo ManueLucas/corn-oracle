@@ -13,18 +13,22 @@ def load_model(model_name, checkpoint_name, device):
     Placeholder function to be implemented.
     """
     # TODO: Add logic to load the specified model and checkpoint
-    checkpoints_folder = "checkpoints/"
-    checkpoint = torch.load(f"{checkpoints_folder}{checkpoint_name}")
-
-    params = checkpoint['model_hyperparams']
 
 
     if model_name == "AutoregressiveRNN":
+        checkpoints_folder = "rnn_models/"
+        checkpoint = torch.load(f"{checkpoints_folder}{checkpoint_name}")
+
+        params = checkpoint['model_hyperparams']
         model = AutoregressiveRNN(**params).to(device)
         # Load weights
         model.load_state_dict(checkpoint['model_state_dict'])
         model.eval()
     elif model_name == "TS2VecRegressor":
+        checkpoints_folder = "ts2vec_models/"
+        checkpoint = torch.load(f"{checkpoints_folder}{checkpoint_name}")
+
+        params = checkpoint['model_hyperparams']
         model = TS2VecRegressor(**params)
 
         
@@ -89,11 +93,11 @@ def autoregressive_prediction_ts2vec(model, initial_sequence, prediction_steps=1
     print(np.stack(predictions).shape)
     return np.stack(predictions)
 
-def eval_rnn(model, device):
+def eval_rnn(model, device, data):
     sequence_length = 30  # days
     input_size = 7        # univariate series
     output_size = 7
-    data = pd.read_csv('./Data/eval_corn_futures_2025-01-01_to_2025-03-31.csv')
+    #data = pd.read_csv('./Data/eval_corn_futures_2025-01-01_to_2025-03-31.csv')
     # Convert all columns to numeric, coercing errors to NaN
     # Convert all other columns to numeric (floats), coercing errors to NaN
     data.iloc[:, 1:] = data.iloc[:, 1:].apply(pd.to_numeric, errors='coerce')
@@ -217,9 +221,9 @@ def evaluate_model(model, features, device):
         data = pd.read_csv('./Data/combined_data_2025-01-01_to_2025-03-31.csv')
 
     if model.__class__.__name__ == "TS2VecRegressor":
-        eval_ts2vec(model, device, data)
+        eval_ts2vec(model=model, device=device, data=data)
     elif model.__class__.__name__ == "AutoregressiveRNN":
-        eval_rnn(model, device, data)
+        eval_rnn(model=model, device=device, data=data)
     else:
         raise ValueError(f"Unsupported model class: {model.__class__.__name__}")
         
