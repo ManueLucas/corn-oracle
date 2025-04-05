@@ -91,7 +91,7 @@ def download_combined(start_date, corn_end_date, weather_end_date, ticker=ticker
     return combined_data
 
 def split_combined(ticker, start_date, corn_end_date, weather_end_date):
-    combined_data = download_combined(ticker, start_date, corn_end_date, weather_end_date)
+    combined_data = download_combined(start_date, corn_end_date, weather_end_date, ticker=ticker)
 
     combined_train_data, combined_test_data = train_test_split(combined_data, test_size=0.2, shuffle=False)
 
@@ -227,12 +227,12 @@ def main():
         if args.data_type == "corn":
             download_corn_futures_data(ticker, start_date_train, corn_end_date_train)
         elif args.data_type == "combined":
-            download_combined(ticker, start_date_train, corn_end_date_train, weather_end_date_train)
+            download_combined(start_date_train, corn_end_date_train, weather_end_date_train, ticker=ticker)
     elif args.mode == "test":
         if args.data_type == "corn":
             download_corn_futures_eval_data()
         elif args.data_type == "combined":
-            download_combined(ticker, start_date_test, corn_end_date_test, weather_end_date_test)
+            download_combined(start_date_test, corn_end_date_test, weather_end_date_test, ticker=ticker)
 
 if __name__ == "__main__":
     main()
