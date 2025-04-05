@@ -75,7 +75,7 @@ def train_linear_model(
         encoder_weights=None,
         temporal_unit=temporal_unit,
         encoder_lr=learning_rate,
-        device="cpu",
+        device=device,
     )
 
     losses = train_model(model, train_sequences, train_targets, num_epochs, n_iters)
@@ -137,7 +137,7 @@ def train_and_test_linear_model(
         encoder_weights=None,
         temporal_unit=temporal_unit,
         encoder_lr=learning_rate,
-        device="cpu",
+        device=device,
     )
     print(f"train sequence dataset shape: {train_sequences.shape}")
     losses = train_model(model, train_sequences, train_targets, num_epochs, n_iters)
@@ -158,7 +158,7 @@ def train_and_test_linear_model(
             # targets = scaler.inverse_transform(targets.cpu().numpy().reshape(-1, targets.shape[-1])).reshape(targets.shape)
 
             # if you want to only test close price, use these instead
-            outputs = model.predict(inputs.numpy())
+            outputs = model.predict(inputs.to('cpu').numpy())
 
             outputs_close = outputs[..., 0]
             targets_close = targets[..., 0]

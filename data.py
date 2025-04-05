@@ -19,7 +19,7 @@ weather_end_date_train = "2024-12-31"
 start_date_test = "2025-01-01"
 
 corn_end_date_test = "2025-03-31"
-weather_end_date_test = "2024-03-30"
+weather_end_date_test = "2025-03-30"
 #data_end = datetime.today().strftime('%Y-%m-%d')
 
 # Download historical OHLC data using yfinance
@@ -69,7 +69,7 @@ def download_corn_futures_data(ticker, start_date, end_date):
         print(f"An error occurred: {e}")
         return None
     
-def download_combined(ticker, start_date, corn_end_date, weather_end_date):
+def download_combined(start_date, corn_end_date, weather_end_date, ticker=ticker):
     corn_data = download_corn_futures_data(ticker, start_date, corn_end_date)
     weather_data = download_weather_data(start_date, weather_end_date)
 
@@ -81,6 +81,7 @@ def download_combined(ticker, start_date, corn_end_date, weather_end_date):
     weather_data.set_index('Date', inplace=True)
 
     combined_data = pd.concat([corn_data, weather_data], axis=1)
+    combined_data.drop(columns=["Open", "High", "Low", "Volume", "weather_code", "temperature_2m_max", "temperature_2m_min", "rain_sum", "daylight_duration", "snowfall_sum"], inplace=True)
 
     output_file = os.path.join("Data", f"combined_data_{start_date}_to_{corn_end_date}.csv")
     combined_data.to_csv(output_file, index_label='Date')
@@ -231,7 +232,7 @@ def main():
         if args.data_type == "corn":
             download_corn_futures_eval_data()
         elif args.data_type == "combined":
-            split_combined(ticker, start_date_test, corn_end_date_test, weather_end_date_test)
+            download_combined(ticker, start_date_test, corn_end_date_test, weather_end_date_test)
 
 if __name__ == "__main__":
     main()
