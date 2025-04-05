@@ -60,7 +60,7 @@ def download_corn_futures_data(ticker, start_date, end_date):
         # Save to a CSV file
         output_file = os.path.join("Data", f"corn_futures_{start_date}_to_{end_date}.csv")
         
-        data.to_csv(output_file, index_label='Date')
+        # data.to_csv(output_file, index_label='Date')
 
         print(f"Data downloaded and saved to {output_file}")
 
@@ -136,7 +136,7 @@ def download_corn_futures_full_data(start_date = '2024-08-01', end_date = '2025-
         
         output_file = os.path.join("Data", f"corn_futures_{start_date}_to_{end_date}.csv")
         
-        data.to_csv(output_file, index_label='Date')
+        # data.to_csv(output_file, index_label='Date')
 
         print(f"Data downloaded and saved to {output_file}")
     except Exception as e:
@@ -179,7 +179,7 @@ def download_corn_futures_eval_data():
         
         eval_output_file = os.path.join("Data", f"eval_corn_futures_{start_date}_to_{end_date}.csv")
         
-        data.to_csv(eval_output_file, index_label='Date')
+        # data.to_csv(eval_output_file, index_label='Date')
 
         print(f"Data downloaded and saved to {eval_output_file}")
     except Exception as e:

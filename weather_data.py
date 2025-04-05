@@ -29,6 +29,7 @@ def download_weather_data(start_date, end_date):
 		"hourly": "temperature_2m",
 		"timezone": "GMT"
 	}
+    print(f"start_date: {start_date}, end_date: {end_date}")
     responses = openmeteo.weather_api(url, params=params)
 
     # Process first location. Add a for-loop for multiple locations or weather models
@@ -74,7 +75,7 @@ def download_weather_data(start_date, end_date):
     print(daily_dataframe)
     
     output_path = os.path.join(output_dir, "weather_data_2000-08-01_to_2025-01-01.csv")
-    daily_dataframe.to_csv(output_path, index=False)
+    # daily_dataframe.to_csv(output_path, index=False)
     print(f"Weather data exported to {output_path}")
 
     return daily_dataframe
