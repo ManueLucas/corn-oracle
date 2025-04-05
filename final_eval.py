@@ -232,7 +232,7 @@ def evaluate_model(model, features, device):
 
 def main():
     parser = argparse.ArgumentParser(description="Evaluate a model with a given checkpoint.")
-    parser.add_argument("--model", type=str, required=True, help="Name of the model to evaluate.")
+    parser.add_argument("--model", type=str, required=True, help="Name of the model to evaluate. Options: 'AutoregressiveRNN', 'TS2VecRegressor'.")
     parser.add_argument("--checkpoint", type=str, required=True, help="Path to the model checkpoint.")
     parser.add_argument("--features", type=str, required=True, help="Subset of features that the model was trained on.")
     parser.add_argument("--device", type=str, default="cpu", help="Device to run the evaluation on ('cpu' or 'cuda').")
