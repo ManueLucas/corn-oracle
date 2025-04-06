@@ -1,4 +1,4 @@
-experiment_name: best_model_2
+experiment_name: best_model_with_ma_90
 mode: train # Mode to run the script: 'train' or 'validate'.
 model_type: ts2veclinear
 dataset:
@@ -14,6 +14,7 @@ dataset:
     - Close
     - MA_7
     - MA_30
+    - MA_90
     - shortwave_radiation_sum
     - temperature_2m_mean
     - sunshine_duration
