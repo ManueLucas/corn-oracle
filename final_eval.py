@@ -59,6 +59,8 @@ def autoregressive_prediction(model, initial_sequence, prediction_steps=1, devic
             predictions.append(pred.squeeze(0))  # remove batch dimension
             # Append prediction to sequence and drop the oldest time step.
             new_input = pred.unsqueeze(1)  # shape: (1, 1, input_size)
+            print(current_seq)
+
             current_seq = torch.cat((current_seq[:, 1:, :], new_input), dim=1)
     
     return torch.stack(predictions)
@@ -89,7 +91,7 @@ def autoregressive_prediction_ts2vec(model, initial_sequence, prediction_steps=1
             print(f"predicted close: {pred[0][0]}")
             # Append prediction to sequence
             new_input = np.expand_dims(pred, axis=0)  # shape: (1, features)
-            print(new_input)
+            # print(new_input)
             current_seq = np.concatenate((current_seq[:, 1:, :], new_input), axis=1) # exclude last timestep, append new prediction
     print(np.stack(predictions).shape)
     return np.stack(predictions)

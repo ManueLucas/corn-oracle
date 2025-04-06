@@ -26,4 +26,4 @@ training:
   num_layers: 2 # Dimension of the encoding representations.
   num_epochs: 5 # Number of training epochs.
   learning_rate: 0.001  # Learning rate for the optimizer.
-  n_splits: 3 # Number of splits for TimeSeriesSplit during validation.
+  n_splits: 9 # Number of splits for TimeSeriesSplit during validation.

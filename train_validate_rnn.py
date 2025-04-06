@@ -14,8 +14,6 @@ from data import download_combined
 import argparse
 
 
-scaler = StandardScaler()
-
 
 # Training loop for the model.
 def train_model(model, train_loader, num_epochs=10, learning_rate=0.001, device="cpu"):
@@ -178,13 +176,6 @@ def train_and_test_autoregressive_rnn(
 
             outputs, _ = model(inputs)
 
-            # do an inverse transform to allow comparison with raw data
-            outputs = scaler.inverse_transform(
-                outputs.cpu().numpy().reshape(-1, outputs.shape[-1])
-            ).reshape(outputs.shape)
-            targets = scaler.inverse_transform(
-                targets.cpu().numpy().reshape(-1, targets.shape[-1])
-            ).reshape(targets.shape)
 
             # if you want to only test close price, use these instead
             # outputs_close = outputs[..., 0]
@@ -234,9 +225,6 @@ def rnn_prepare_train_test(
     num_features = alldata.shape[1]
 
     # normalize data using a standard scaler
-    global scaler
-    alldata = scaler.fit_transform(alldata)
-
     input_size = alldata.shape[1]
     output_size = input_size
 
@@ -269,14 +257,7 @@ def rnn_prepare_train_test(
         )
 
         # transforming the given sequences
-        train_sequences = scaler.transform(
-            train_sequences.reshape(-1, train_sequences.shape[-1])
-        ).reshape(train_sequences.shape)
-        train_targets = scaler.transform(train_targets)
-        test_sequences = scaler.transform(
-            test_sequences.reshape(-1, test_sequences.shape[-1])
-        ).reshape(test_sequences.shape)
-        test_targets = scaler.transform(test_targets)
+        
 
         train_losses, test_losses = train_and_test_autoregressive_rnn(
             sequence_length,
