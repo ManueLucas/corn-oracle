@@ -1,5 +1,5 @@
 experiment_name: example_rnn
-mode: train # Mode to run the script: 'train' or 'validate'.
+mode: validate # Mode to run the script: 'train' or 'validate'.
 model_type: rnn
 dataset:
   ticker: "ZC=F"

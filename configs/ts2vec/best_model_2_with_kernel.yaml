@@ -21,11 +21,11 @@ dataset:
     - precipitation_hours
 
 training:
-  sequence_length: 30 # Length of input sequences.
-  hidden_size: 256 # Number of features in the hidden state.
-  encoding_dims: 16 # Dimension of the encoding representations.
+  sequence_length: 90 # Length of input sequences.
+  hidden_size: 128 # Number of features in the hidden state.
+  encoding_dims: 128 # Dimension of the encoding representations.
   num_epochs: 25 # Number of training epochs.
-  n_iters: 1800 # Number of iterations per epoch.
+  n_iters: 2500 # Number of iterations per epoch.
   learning_rate: 0.0001  # Learning rate for the optimizer.
   n_splits: 3 # Number of splits for TimeSeriesSplit during validation.
   kernel: True
