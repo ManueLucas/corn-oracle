@@ -15,8 +15,10 @@ def load_model(model_name, device):
     Placeholder function to be implemented.
     """
     # TODO: Add logic to load the specified model and checkpoint
+    
+    checkpoint_path = os.path.join("results", config.experiment_name + f"_{config.model_type}", config.experiment_name + ".pth")
+
     if model_name == "rnn":
-        checkpoint_path = os.path.join("results", config.experiment_name + "_rnn", config.experiment_name + ".pth")
         checkpoint = torch.load(f"{checkpoint_path}")
 
         params = checkpoint['model_hyperparams']
@@ -25,7 +27,6 @@ def load_model(model_name, device):
         model.load_state_dict(checkpoint['model_state_dict'])
         model.eval()
     elif model_name == "ts2veclinear":
-        checkpoint_path = os.path.join("results", config.experiment_name + "_ts2veclinear", config.experiment_name + ".pth")
         checkpoint = torch.load(f"{checkpoint_path}")
 
         params = checkpoint['model_hyperparams']
@@ -236,7 +237,8 @@ if __name__ == "__main__":
     os.makedirs("results", exist_ok=True)
 
     config = load_config(args.config)
-    experiment_folder = os.path.join("results", config.experiment_name + "_ts2veclinear")
+    
+    experiment_folder = os.path.join("results", config.experiment_name + f"_{config.model_type}")
 
     # Load the model and checkpoint
     model = load_model(config.model_type, args.device)
