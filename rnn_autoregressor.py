@@ -44,20 +44,15 @@ class AutoregressiveRNN(nn.Module):
         last_out = lstm_out[:, -1, :]
         pred = self.fc(last_out)
         return pred, hidden
-    
-    def save_model(self, path):
+
+    def save_model(self, path, model_name=None):
         # Ensure the directory exists
         os.makedirs(path, exist_ok=True)
-        
         # Find the next available filename
-        base_filename = 'rnn'
         extension = '.pth'
-        counter = 1
-        while os.path.exists(os.path.join(path, f"{base_filename}_{counter}{extension}")):
-            counter += 1
         
         # Save the model with the numbered filename
         torch.save({
             'model_state_dict': self.state_dict(),
             'model_hyperparams': self.hyperparams,  # like input size, layer sizes, etc
-        }, os.path.join(path, f"{base_filename}_{counter}{extension}"))
+        }, os.path.join(path, f"{model_name}{extension}"))
