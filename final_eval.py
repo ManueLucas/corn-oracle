@@ -5,28 +5,28 @@ import torch
 from data import prepare_sequences_targets
 import pandas as pd
 import numpy as np
+import os
+from utils import load_config
 from data import download_corn_futures_eval_data, download_combined
 
-def load_model(model_name, checkpoint_name, device):
+def load_model(model_name, device):
     """
     Load the model and checkpoint.
     Placeholder function to be implemented.
     """
     # TODO: Add logic to load the specified model and checkpoint
-
-
-    if model_name == "AutoregressiveRNN":
-        checkpoints_folder = "rnn_models/"
-        checkpoint = torch.load(f"{checkpoints_folder}{checkpoint_name}")
+    if model_name == "rnn":
+        checkpoint_path = os.path.join("results", config.experiment_name + "_rnn", config.experiment_name + ".pth")
+        checkpoint = torch.load(f"{checkpoint_path}")
 
         params = checkpoint['model_hyperparams']
         model = AutoregressiveRNN(**params).to(device)
         # Load weights
         model.load_state_dict(checkpoint['model_state_dict'])
         model.eval()
-    elif model_name == "TS2VecRegressor":
-        checkpoints_folder = "ts2vec_models/"
-        checkpoint = torch.load(f"{checkpoints_folder}{checkpoint_name}")
+    elif model_name == "ts2veclinear":
+        checkpoint_path = os.path.join("results", config.experiment_name + "_ts2veclinear", config.experiment_name + ".pth")
+        checkpoint = torch.load(f"{checkpoint_path}")
 
         params = checkpoint['model_hyperparams']
         model = TS2VecRegressor(**params)
@@ -209,16 +209,13 @@ def eval_ts2vec(model, device, data):
     plt.savefig("predicted_vs_actual_close_ts2vec.png")
     plt.show()
 
-def evaluate_model(model, features, device):
+def evaluate_model(model, device):
     """
     Evaluate the model.
     """
-    if features == "raw":
-        download_corn_futures_eval_data()
-        data = pd.read_csv('./Data/eval_corn_futures_2025-01-01_to_2025-03-31.csv')
-    elif features == "combined_raw":
-        download_combined(start_date="2025-01-01", corn_end_date="2025-03-31", weather_end_date="2025-03-31")
-        data = pd.read_csv('./Data/combined_data_2025-01-01_to_2025-03-31.csv')
+    data_path = f'{experiment_folder}/combined_data_{config.dataset.start_date_test}_to_{config.dataset.corn_end_date_test}.csv'
+    print(f"Loading data from {data_path}")
+    data = pd.read_csv(f'{experiment_folder}/combined_data_{config.dataset.start_date_test}_to_{config.dataset.corn_end_date_test}.csv')
 
     if model.__class__.__name__ == "TS2VecRegressor":
         eval_ts2vec(model=model, device=device, data=data)
@@ -230,19 +227,19 @@ def evaluate_model(model, features, device):
         
         
 
-def main():
+if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Evaluate a model with a given checkpoint.")
-    parser.add_argument("--model", type=str, required=True, help="Name of the model to evaluate. Options: 'AutoregressiveRNN', 'TS2VecRegressor'.")
-    parser.add_argument("--checkpoint", type=str, required=True, help="Path to the model checkpoint.")
-    parser.add_argument("--features", type=str, required=True, help="Subset of features that the model was trained on.")
-    parser.add_argument("--device", type=str, default="cpu", help="Device to run the evaluation on ('cpu' or 'cuda').")
+    parser.add_argument("--config", type=str, required=True, help="Configuration file for the model.")
+    parser.add_argument("--device", type=str, choices=["cuda", "cpu"], default='cpu', help="Device to run the model on: 'cuda' or 'cpu'.")
+    
     args = parser.parse_args()
+    os.makedirs("results", exist_ok=True)
+
+    config = load_config(args.config)
+    experiment_folder = os.path.join("results", config.experiment_name + "_ts2veclinear")
 
     # Load the model and checkpoint
-    model = load_model(args.model, args.checkpoint, args.device)
+    model = load_model(config.model_type, args.device)
 
     # Evaluate the model
-    evaluate_model(model, args.features, args.device)
-
-if __name__ == "__main__":
-    main()
+    evaluate_model(model, args.device)

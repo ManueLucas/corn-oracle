@@ -69,7 +69,7 @@ def download_corn_futures_data(ticker, start_date, end_date):
         print(f"An error occurred: {e}")
         return None
     
-def download_combined(start_date, corn_end_date, weather_end_date, ticker=ticker):
+def download_combined(start_date, corn_end_date, weather_end_date, ticker=ticker, keep_columns=[], save_path="Data"):
     corn_data = download_corn_futures_data(ticker, start_date, corn_end_date)
     weather_data = download_weather_data(start_date, weather_end_date)
 
@@ -81,9 +81,13 @@ def download_combined(start_date, corn_end_date, weather_end_date, ticker=ticker
     weather_data.set_index('Date', inplace=True)
 
     combined_data = pd.concat([corn_data, weather_data], axis=1)
-    combined_data.drop(columns=["Open", "High", "Low", "Volume", "weather_code", "temperature_2m_max", "temperature_2m_min", "rain_sum", "daylight_duration", "snowfall_sum"], inplace=True)
+    columns_list = combined_data.columns.tolist()
+    for i in columns_list:
+        if i not in keep_columns:
+            combined_data.drop(columns=[i], inplace=True)
+    # combined_data.drop(columns=["Open", "High", "Low", "Volume", "weather_code", "temperature_2m_max", "temperature_2m_min", "rain_sum", "daylight_duration", "snowfall_sum"], inplace=True)
 
-    output_file = os.path.join("Data", f"combined_data_{start_date}_to_{corn_end_date}.csv")
+    output_file = os.path.join(save_path, f"combined_data_{start_date}_to_{corn_end_date}.csv")
     combined_data.to_csv(output_file, index_label='Date')
 
     print(f"Data downloaded and saved to {output_file}")
@@ -223,16 +227,13 @@ def main():
 
     args = parser.parse_args()
 
+    all_train_features = ["Date","Close","High","Low","Open","Volume","MA_7","MA_30","weather_code","shortwave_radiation_sum","temperature_2m_mean","temperature_2m_max","temperature_2m_min","sunshine_duration","precipitation_sum","precipitation_hours","rain_sum","daylight_duration","snowfall_sum"]
+    keep = ["Date","Close","High","Low","Open","Volume","MA_7","MA_30"]
+
     if args.mode == "train":
-        if args.data_type == "corn":
-            download_corn_futures_data(ticker, start_date_train, corn_end_date_train)
-        elif args.data_type == "combined":
-            download_combined(start_date_train, corn_end_date_train, weather_end_date_train, ticker=ticker)
+        download_combined(start_date_train, corn_end_date_train, weather_end_date_train, ticker=ticker, keep_columns=keep)
     elif args.mode == "test":
-        if args.data_type == "corn":
-            download_corn_futures_eval_data()
-        elif args.data_type == "combined":
-            download_combined(start_date_test, corn_end_date_test, weather_end_date_test, ticker=ticker)
+        download_combined(start_date_test, corn_end_date_test, weather_end_date_test, ticker=ticker, keep_columns=keep)
 
 if __name__ == "__main__":
     main()

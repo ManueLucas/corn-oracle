@@ -1,9 +1,11 @@
 import os
+from types import SimpleNamespace
 import numpy as np
 import pickle
 import torch
 import random
 from datetime import datetime
+import yaml
 
 def pkl_save(name, var):
     with open(name, 'wb') as f:
@@ -125,3 +127,21 @@ def init_dl_program(
         torch.backends.cuda.matmul.allow_tf32 = use_tf32
         
     return devices if len(devices) > 1 else devices[0]
+
+class NestedNamespace(SimpleNamespace):
+    def __init__(self, dictionary, **kwargs):
+        super().__init__(**kwargs)
+        for key, value in dictionary.items():
+            if isinstance(value, dict):
+                self.__setattr__(key, NestedNamespace(value))
+            else:
+                self.__setattr__(key, value)
+
+    def get(self, key, default=None):
+        return getattr(self, key, default)
+
+
+def load_config(config_path):
+    with open(config_path, "r") as f:
+        config = yaml.safe_load(f)
+    return NestedNamespace(config)

@@ -6,18 +6,20 @@ from torch.utils.data import DataLoader, TensorDataset
 import pandas as pd
 from sklearn.model_selection import TimeSeriesSplit
 from sklearn.preprocessing import StandardScaler
-from data import prepare_sequences_targets
+from data import download_corn_futures_data, download_corn_futures_eval_data, prepare_sequences_targets
 from ts2vec_autoregressor import TS2VecRegressor
 import os
 # from data import download_corn_futures_full_data
 import argparse
+from utils import load_config
+from data import download_combined
 
 scaler = StandardScaler()
 
 
 def train_model(model, train_sequences, train_targets, num_epochs, n_iters):
-    
     print(f"training for {num_epochs} epochs with {n_iters} train steps")
+
     losses = model.ts2vec.fit(train_sequences, n_epochs=num_epochs, n_iters=n_iters, verbose=True)
 
     sequence_repr = model.ts2vec.encode(
@@ -77,7 +79,8 @@ def train_linear_model(
         encoder_lr=learning_rate,
         device=device,
     )
-
+    print("in train_linear_model...")
+    print(f"num_epochs: {num_epochs}, n_iters: {n_iters}")
     losses = train_model(model, train_sequences, train_targets, num_epochs, n_iters)
 
     print("Logging losses...")
@@ -195,9 +198,9 @@ def ts2vec_prepare_train_test(
     learning_rate=0.001,
     device="cpu",
 ):
-    # Example parameters.
-    default_route = "./Data/"
-    data = pd.read_csv(default_route + args.dataset)
+    default_route = experiment_folder #this variable comes from main (global stuff, i know)
+    data_path = os.path.join(default_route, f"combined_data_{config.dataset.start_date_train}_to_{config.dataset.corn_end_date_train}.csv")
+    data = pd.read_csv(data_path)
 
     # Convert all columns to numeric, coercing errors to NaN
     data = data.apply(pd.to_numeric, errors="coerce")
@@ -220,7 +223,7 @@ def ts2vec_prepare_train_test(
     ts_input = alldata.reshape(1, -1, num_features)
 
     # Define TimeSeriesSplit parameters
-    n_splits = args.n_splits  # Number of splits
+    n_splits = config.training.n_splits  # Number of splits
     test_size = int(alldata.shape[0] * 0.1)
     gap = 0  # Number of samples to exclude between train and test sets
     tscv = TimeSeriesSplit(
@@ -260,9 +263,9 @@ def ts2vec_prepare_train(
     learning_rate=0.001,
     device="cpu",
 ):
-    # Example parameters.
-    default_route = "./Data/"
-    data = pd.read_csv(default_route + args.dataset)
+    default_route = experiment_folder #this variable comes from main (global stuff, i know)
+    data_path = os.path.join(default_route, f"combined_data_{config.dataset.start_date_train}_to_{config.dataset.corn_end_date_train}.csv")
+    data = pd.read_csv(data_path)
 
     # Convert all columns to numeric, coercing errors to NaN
     data = data.apply(pd.to_numeric, errors="coerce")
@@ -294,10 +297,7 @@ def ts2vec_prepare_train(
         device=device,
     )
 
-    save_path = "ts2vec_models"
-    os.makedirs(save_path, exist_ok=True)
-
-    model.save_model(save_path)
+    model.save_model(experiment_folder, model_name=config.experiment_name)
     return model
 
 
@@ -305,83 +305,39 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="Train an autoregressive RNN model.")
     parser.add_argument(
-        "--mode",
-        type=str,
-        choices=["train", "validate"],
-        default="train",
-        help="Mode to run the script: 'train' or 'validate'."
-    )
-    parser.add_argument(
         "--print_predictions",
         action="store_true",
         help="Print predicted vs actual values during testing."
     )
-    parser.add_argument(
-        "--sequence_length", type=int, default=30, help="Length of input sequences."
-    )
-    parser.add_argument(
-        "--hidden_size",
-        type=int,
-        default=128,
-        help="Number of features in the hidden state.",
-    )
-    parser.add_argument(
-        "--encoding_dims",
-        type=int,
-        default=128,
-        help="Dimension of the encoding representations.",
-    )
-    parser.add_argument(
-        "--num_epochs", type=int, default=10, help="Number of training epochs."
-    )
-    parser.add_argument(
-        "--n_iters", type=int, default=200, help="Number of iterations per epoch."
-    )
-    parser.add_argument(
-        "--n_splits",
-        type=int,
-        default=3,
-        help="Number of splits for TimeSeriesSplit during validation."
-    )
-    parser.add_argument(
-        "--learning_rate",
-        type=float,
-        default=0.001,
-        help="Learning rate for the optimizer.",
-    )
     parser.add_argument("--device", type=str, default="cpu", help="'cpu' or 'cuda'.")
-    parser.add_argument("--dataset", type=str, help="Path to the dataset CSV file.")
+    parser.add_argument("--config_path", type=str, required=True, help="Path to the config file.")
 
     args = parser.parse_args()
- 
+    os.makedirs("results", exist_ok=True)
+    config = load_config(args.config_path)
+    experiment_folder = os.path.join("results", config.experiment_name + "_ts2veclinear")
+    os.makedirs(experiment_folder, exist_ok=True)
 
-    # rnn_prepare_train(
-    #     sequence_length=args.sequence_length,
-    #     hidden_size=args.hidden_size,
-    #     num_layers=args.num_layers,
-    #     num_epochs=args.num_epochs,
-    #     learning_rate=args.learning_rate,
-    #     device=args.device
-    # )
+    download_combined(config.dataset.start_date_train, config.dataset.corn_end_date_train, config.dataset.weather_end_date_train, ticker=config.dataset.ticker, keep_columns=config.dataset.features, save_path=experiment_folder)
+    download_combined(config.dataset.start_date_test, config.dataset.corn_end_date_test, config.dataset.weather_end_date_test, ticker=config.dataset.ticker, keep_columns=config.dataset.features, save_path=experiment_folder)
     
-    
-    if args.mode == "train":
+    if config.mode == "train":
         ts2vec_prepare_train(
-            sequence_length=args.sequence_length,
-            hidden_size=args.hidden_size,
-            encoding_dims=args.encoding_dims,
-            num_epochs=args.num_epochs,
-            n_iters=args.n_iters,
-            learning_rate=args.learning_rate,
+            sequence_length=config.training.sequence_length,
+            hidden_size=config.training.hidden_size,
+            encoding_dims=config.training.encoding_dims,
+            num_epochs=config.training.num_epochs,
+            n_iters=config.training.n_iters,
+            learning_rate=config.training.learning_rate,
             device=args.device
         )
-    elif args.mode == "validate":
+    elif config.mode == "validate":
         ts2vec_prepare_train_test(
-            sequence_length=args.sequence_length,
-            hidden_size=args.hidden_size,
-            encoding_dims=args.encoding_dims,
-            num_epochs=args.num_epochs,
-            n_iters=args.n_iters,
-            learning_rate=args.learning_rate,
+            sequence_length=config.training.sequence_length,
+            hidden_size=config.training.hidden_size,
+            encoding_dims=config.training.encoding_dims,
+            num_epochs=config.training.num_epochs,
+            n_iters=config.training.n_iters,
+            learning_rate=config.training.learning_rate,
             device=args.device
         )

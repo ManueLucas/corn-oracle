@@ -55,20 +55,15 @@ class TS2VecRegressor(nn.Module):
         
         return pred
     
-    def save_model(self, path):
+    def save_model(self, path, model_name=None):
         self.hyperparams["encoder_weights"] = self.ts2vec.net.state_dict()
         self.hyperparams["regressor_weights"] = pickle.dumps(self.ridge)
         # Ensure the directory exists
         os.makedirs(path, exist_ok=True)
         
-        # Find the next available filename
-        base_filename = 'ts2veclinear'
         extension = '.pth'
-        counter = 1
-        while os.path.exists(os.path.join(path, f"{base_filename}_{counter}{extension}")):
-            counter += 1
         
-        # Save the model with the numbered filename
+        # Save the model with the model name
         torch.save({
             'model_hyperparams': self.hyperparams,  # like input size, layer sizes, etc
-        }, os.path.join(path, f"{base_filename}_{counter}{extension}"))
+        }, os.path.join(path, f"{model_name}{extension}"))
