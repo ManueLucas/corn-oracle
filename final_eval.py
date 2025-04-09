@@ -59,7 +59,6 @@ def autoregressive_prediction(model, initial_sequence, prediction_steps=1, devic
             predictions.append(pred.squeeze(0))  # remove batch dimension
             # Append prediction to sequence and drop the oldest time step.
             new_input = pred.unsqueeze(1)  # shape: (1, 1, input_size)
-            print(current_seq)
 
             current_seq = torch.cat((current_seq[:, 1:, :], new_input), dim=1)
     
@@ -81,19 +80,13 @@ def autoregressive_prediction_ts2vec(model, initial_sequence, prediction_steps=1
     predictions = []
     # (sequence_length, features)
     current_seq = np.expand_dims(initial_sequence, axis=0)
-    print("current sequence:")
-    print(current_seq)
     with torch.no_grad():
         for _ in range(prediction_steps):
             pred = model.predict(current_seq) # pred should be (features)
             predictions.append(pred)
-            print(f"shape of pred: {pred.shape}")
-            print(f"predicted close: {pred[0][0]}")
             # Append prediction to sequence
             new_input = np.expand_dims(pred, axis=0)  # shape: (1, features)
-            # print(new_input)
             current_seq = np.concatenate((current_seq[:, 1:, :], new_input), axis=1) # exclude last timestep, append new prediction
-    print(np.stack(predictions).shape)
     return np.stack(predictions)
 
 def eval_rnn(model, device, data):
@@ -121,8 +114,6 @@ def eval_rnn(model, device, data):
     sequences, actual = prepare_sequences_targets(alldata, sequence_length)
     initial_sequence = sequences[0]
     num_steps_to_predict = actual.shape[0]
-    print(f'total length of data: {alldata.shape[0]}')
-    print(f'initial_sequence length: {initial_sequence.shape[0]}')
     
     initial_sequence = torch.tensor(initial_sequence, dtype=torch.float).to(device)
     actual = torch.tensor(actual, dtype=torch.float).to(device)
@@ -134,14 +125,10 @@ def eval_rnn(model, device, data):
 
     # Offset predicted close by the sequence length
     offset = sequence_length
-    predicted_close_offset = [np.nan] * offset + predicted_close.tolist()
-    print(dates)
-    print(predicted_close_offset)
-    print(actual_close)
-    print(dates.shape)
-    print(len(predicted_close_offset))
-    print(len(actual_close))
-    
+    predicted_close = predicted_close.cpu().numpy()
+    actual_close_offset = actual_close[offset:]
+    print(f"MAE for prediction vs actual: {np.mean(np.abs(predicted_close - actual_close_offset))}")
+    predicted_close_offset = [np.nan] * offset + predicted_close.tolist()    
     # Plot actual and predicted close prices
     plt.figure(figsize=(12, 6))
     plt.plot(dates, actual_close, label="Actual Close", color="blue")
@@ -155,6 +142,7 @@ def eval_rnn(model, device, data):
     # Save the figure
     plt.savefig("predicted_vs_actual_close.png")
     plt.show()
+    
     
     
 
@@ -184,7 +172,6 @@ def eval_ts2vec(model, device, data):
     prediction = autoregressive_prediction_ts2vec(model=model, initial_sequence=initial_sequence, prediction_steps=num_steps_to_predict)
     predicted_close = prediction[:, :, 0].squeeze(-1)
     
-    print(predicted_close)
     import matplotlib.pyplot as plt
 
 

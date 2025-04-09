@@ -1,5 +1,5 @@
 experiment_name: example_rnn
-mode: validate # Mode to run the script: 'train' or 'validate'.
+mode: train # Mode to run the script: 'train' or 'validate'.
 model_type: rnn
 dataset:
   ticker: "ZC=F"
@@ -22,8 +22,8 @@ dataset:
 
 training:
   sequence_length: 30 # Length of input sequences.
-  hidden_size: 64 # Number of features in the hidden state.
-  num_layers: 2 # Dimension of the encoding representations.
-  num_epochs: 5 # Number of training epochs.
-  learning_rate: 0.001  # Learning rate for the optimizer.
+  hidden_size: 128 # Number of features in the hidden state.
+  num_layers: 1 # Dimension of the encoding representations.
+  num_epochs: 10 # Number of training epochs.
+  learning_rate: 0.02  # Learning rate for the optimizer.
   n_splits: 9 # Number of splits for TimeSeriesSplit during validation.

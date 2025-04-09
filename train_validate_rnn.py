@@ -27,7 +27,6 @@ def train_model(model, train_loader, num_epochs=10, learning_rate=0.001, device=
         for inputs, targets in train_loader:
             inputs = inputs.to(device)
             targets = targets.to(device)
-
             optimizer.zero_grad()
             outputs, _ = model(inputs)
             loss = criterion(outputs, targets)
