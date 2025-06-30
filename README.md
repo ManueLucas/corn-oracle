@@ -4,41 +4,15 @@ An unfussy (and possibly flexible) corn futures prediction model using curated w
 ## Brought to you by: [Abdullah](https://github.com/AbdullahAswad), [Saad](https://github.com/SaadSheikh02), [and me (Owen)](https://github.com/ManueLucas)
 This project was originally made for COMP4107, taught by Matthew Holden at Carleton University.
 
-# WIP
-How to train autoregressor:
+[📄 Read the term paper](./OracleReport.pdf)
 
-usage: train_autoregressor.py  
+We use YAML files to configure training hyperparameters, feature selection, model variants, and test splits. RNN and TS2Vec models have different hyperparameters, so take care to check the examples we've left.
+There are 2 folders containing yaml files for the models featured in the [📄 report](./OracleReport.pdf) in ./config: "rnn" and "ts2vec", for their respective architectures.
 
-[-h] [--sequence_length SEQUENCE_LENGTH] [--input_size INPUT_SIZE] [--output_size OUTPUT_SIZE] [--hidden_size HIDDEN_SIZE] [--num_layers NUM_LAYERS] [--num_epochs NUM_EPOCHS]
-                              [--learning_rate LEARNING_RATE] [--device DEVICE]
+How to train TS2Vec: python train_validate_ts2vec.py --config_path [CONFIG_PATH] --print_predictions (flag)
+Example: python train_validate_ts2vec.py --config_path ./configs/ts2vec/kernel_encoding_256.yaml
 
-optional arguments:
+How to train LSTM: python train_validate_rnn.py --config_path [CONFIG_PATH] --print_predictions (flag)
+Example: python train_validate_rnn.py --config_path ./configs/rnn/example.yaml
 
-  -h, --help            show this help message and exit
-  
-  --sequence_length SEQUENCE_LENGTH
-  
-                        Length of input sequences.
-                        
-  --hidden_size HIDDEN_SIZE
-  
-                        Number of features in the hidden state.
-                        
-  --num_layers NUM_LAYERS
-  
-                        Number of stacked LSTM layers.
-                        
-  --num_epochs NUM_EPOCHS
-  
-                        Number of training epochs.
-                        
-  --learning_rate LEARNING_RATE
-  
-                        Learning rate for the optimizer.
-
-  --device DEVICE       
-  
-                        'cpu' or 'cuda'.
-Example: 
-
-python ./train_autoregressor.py --hidden_size 256 --num_layers 2 --num_epochs 5 --dataset combined_data_2000-08-01_to_2025-01-01.csv --device cpu
+Yes, setup is messy and redundant in a lot of places, and no, I won't be fixing it. If there is a change, this entire repo will be bulldozed for it.
